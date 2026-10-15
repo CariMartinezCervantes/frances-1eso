@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Être et avoir · Le monstre Zigo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ===== COLORES DEL CENTRO =====
+   Cambia estos valores por los colores del logo del IES El Mayorazgo.
+   (Cambia también los mismos códigos en COLORES_PDF, dentro del <script>.) */
+:root{
+  --c1:#0e7c86;   /* color principal */
+  --c2:#f4b400;   /* color secundario */
+  --c3:#e8553e;   /* color de acento */
+  --c4:#5aa832;   /* verde de Zigo */
+  --bg:#eef6f6; --panel:#ffffff; --ink:#173236; --muted:#557074; --line:#cfe0e1;
+  --ok:#1f8a4c; --okbg:#e3f5ea; --ko:#c93838; --kobg:#fbe8e6;
+  --display:"Baloo 2",system-ui,sans-serif; --body:"Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 var(--body)}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 48px;display:grid;gap:18px}
+
+.hero{background:var(--c1);color:#fff;border-radius:0 0 28px 28px;padding:22px 22px 26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:var(--c2);opacity:.25}
+.school{font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;opacity:.9}
+.hero h1{font-family:var(--display);font-size:clamp(1.9rem,6vw,2.8rem);line-height:1.05;margin:4px 0 6px}
+.hero h1 em{font-style:normal;color:var(--c2)}
+.hero p{margin:0;opacity:.95}
+.hero svg{width:150px;max-width:100%;position:relative;z-index:1}
+@media (max-width:560px){.hero{grid-template-columns:1fr}.hero svg{width:120px;justify-self:center}}
+
+.prog{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0}
+.steps{display:flex;gap:6px}
+.steps span{flex:1;height:12px;border-radius:99px;background:var(--line)}
+.steps span.on{background:var(--c2)}
+.steps span.done{background:var(--c4)}
+.prog small{display:block;text-align:right;color:var(--muted);font-weight:700;margin-top:2px}
+
+.card{background:var(--panel);border-radius:20px;padding:20px;box-shadow:0 3px 0 var(--line)}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.badge{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-family:var(--display);font-size:1.4rem;color:#fff}
+.head h2{font-family:var(--display);font-size:1.4rem;margin:0;line-height:1.1}
+.head h2 small{display:block;font-family:var(--body);font-size:.8rem;color:var(--muted);font-weight:700}
+.inst{margin:0 0 14px;color:var(--muted)}
+.b0{background:#33495a}.b1{background:var(--c3)}.b2{background:var(--c1)}.b3{background:var(--c4)}.b4{background:var(--c2);color:var(--ink)}.b5{background:#7a4fc9}
+
+/* Módulos bloqueados */
+.mod.locked .body{display:none}
+.mod.locked{opacity:.6}
+.mod .lock{display:none;margin:4px 0 0;color:var(--muted);font-weight:700}
+.mod.locked .lock{display:block}
+.mod.passed .head h2::after{content:" ✔";color:var(--ok)}
+
+/* Criterios para el alumnado */
+.crit{display:grid;gap:10px}
+.crit div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;background:#f4fafa;border-radius:12px;padding:10px 12px}
+.crit b.n{font-family:var(--display);font-size:1.1rem;background:var(--c1);color:#fff;border-radius:10px;padding:0 10px}
+.crit small{color:var(--muted);font-weight:700}
+.tag{display:inline-block;background:#e2f2f3;color:var(--c1);border-radius:6px;padding:0 6px;font-weight:800;font-size:.85rem;margin:2px}
+.how{margin:12px 0 0;padding-left:1.2em}
+.how li{margin-bottom:4px}
+
+label.f{display:block;font-weight:800;margin:0 0 4px;letter-spacing:.04em}
+input[type=text]{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;font:inherit;background:#fff;color:var(--ink)}
+input[type=text]:focus,select:focus{outline:3px solid var(--c2);outline-offset:1px}
+input:disabled,select:disabled{background:#f3f6f6;color:var(--ink);opacity:1}
+.ident{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ident .wide{grid-column:1/-1}
+
+.grid{display:grid;gap:8px}
+.q{padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:#fff}
+.q.ok{background:var(--okbg);border-color:var(--ok)}
+.q.ko{background:var(--kobg);border-color:var(--ko)}
+select{font:inherit;padding:4px 8px;border:2px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.mc p{margin:0 0 6px;font-weight:800}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts label{border:2px solid var(--line);border-radius:99px;padding:4px 14px;cursor:pointer;background:#fff}
+.opts input{accent-color:var(--c1)}
+.opts label:has(input:checked){border-color:var(--c1);background:#e2f2f3}
+
+.tip{background:#fff7dc;border:2px dashed var(--c2);border-radius:12px;padding:8px 12px;font-size:.95rem;margin-bottom:12px}
+.text{background:#f2faf3;border-left:6px solid var(--c4);padding:14px 16px;border-radius:12px;line-height:1.8}
+.reading{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:14px;align-items:center;margin-bottom:14px}
+@media (max-width:600px){.reading{grid-template-columns:1fr}.reading svg{width:150px;justify-self:center}}
+
+.play{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:99px;padding:8px 16px;background:var(--c1);color:#fff;font:800 1rem var(--body);cursor:pointer}
+.play[disabled]{opacity:.45;cursor:default}
+.play small{font-weight:700;opacity:.85}
+.audiorow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.audiorow input{width:150px}
+.lila{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#f4effc;border-radius:14px;padding:12px;margin:14px 0}
+.avisoVoz{color:var(--ko);font-weight:700}
+
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
+.big{font:800 1.05rem var(--body);padding:12px 26px;border-radius:14px;border:none;background:var(--c3);color:#fff;cursor:pointer;box-shadow:0 4px 0 #a83a28}
+.big:disabled{display:none}
+.msg{font-weight:800;margin:0}
+.msg.ok{color:var(--ok)}.msg.ko{color:var(--ko)}
+button:focus-visible{outline:3px solid var(--c2);outline-offset:2px}
+
+.score{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+#nota{font-family:var(--display);font-size:3.4rem;line-height:1;color:var(--c1)}
+#medalla{font-family:var(--display);font-size:1.4rem}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.95rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+td:last-child,th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.pdfbtn{font:800 1.1rem var(--body);padding:14px 28px;border-radius:14px;border:none;background:var(--c1);color:#fff;cursor:pointer;box-shadow:0 4px 0 #0a5a61}
+
+details{background:var(--panel);border-radius:20px;padding:16px 20px;box-shadow:0 3px 0 var(--line)}
+summary{font-family:var(--display);font-size:1.1rem;cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div>
+    <div class="school">IES El Mayorazgo · Français · 1º ESO</div>
+    <h1>Être et avoir<br><em>Le monstre Zigo</em></h1>
+    <p>Escucha, lee y demuestra lo que sabes. ¡Bon courage !</p>
+  </div>
+  <svg viewBox="0 0 220 210" aria-hidden="true">
+    <g fill="#5aa832" stroke="#2c5a18" stroke-width="3">
+      <path d="M40 80 L15 120" stroke-width="12" stroke-linecap="round"/><path d="M45 105 L18 150" stroke-width="12" stroke-linecap="round"/>
+      <path d="M180 80 L205 120" stroke-width="12" stroke-linecap="round"/><path d="M175 105 L202 150" stroke-width="12" stroke-linecap="round"/>
+      <path d="M75 170 v25 M110 172 v25 M145 170 v25" stroke-width="12" stroke-linecap="round"/>
+      <ellipse cx="110" cy="125" rx="70" ry="55"/>
+      <circle cx="55" cy="55" r="30"/><circle cx="110" cy="40" r="32"/><circle cx="165" cy="55" r="30"/>
+      <circle cx="30" cy="38" r="8"/><circle cx="78" cy="30" r="8"/><circle cx="85" cy="18" r="8"/><circle cx="136" cy="18" r="8"/><circle cx="142" cy="32" r="8"/><circle cx="190" cy="38" r="8"/>
+    </g>
+    <g fill="#2c5a18"><ellipse cx="70" cy="200" rx="18" ry="8"/><ellipse cx="110" cy="202" rx="18" ry="8"/><ellipse cx="150" cy="200" rx="18" ry="8"/></g>
+    <g fill="#ffd84a" stroke="#2c5a18" stroke-width="2">
+      <circle cx="45" cy="50" r="8"/><circle cx="65" cy="50" r="8"/><circle cx="100" cy="35" r="8"/><circle cx="120" cy="35" r="8"/><circle cx="155" cy="50" r="8"/><circle cx="175" cy="50" r="8"/>
+    </g>
+    <g fill="#1b1b1b"><circle cx="46" cy="51" r="3.5"/><circle cx="66" cy="51" r="3.5"/><circle cx="101" cy="36" r="3.5"/><circle cx="121" cy="36" r="3.5"/><circle cx="156" cy="51" r="3.5"/><circle cx="176" cy="51" r="3.5"/></g>
+    <g fill="#fff" stroke="#2c5a18" stroke-width="2.5"><path d="M95 52 q15 16 30 0 z"/><path d="M152 66 q13 12 26 0 z"/></g>
+  </svg>
+</header>
+
+<div class="wrap">
+  <div class="prog"><div class="steps" id="steps"></div><small id="progtxt">Módulo 0 de 5</small></div>
+
+  <!-- CRITERIOS PARA EL ALUMNADO -->
+  <section class="card">
+    <div class="head"><div class="badge b2">🎯</div><h2>¿Qué voy a demostrar?<small>Criterios de evaluación · Francés 1.º ESO (Canarias)</small></h2></div>
+    <div class="crit">
+      <div><b class="n">1.1</b><span>Entiendo la idea general y los datos concretos de textos cortos, escuchados y leídos.<br><small>Módulos 1 y 4</small></span></div>
+      <div><b class="n">1.2</b><span>Uso trucos para entender: escucho varias veces, me fijo en las imágenes y en el contexto.<br><small>Módulos 1 y 4</small></span></div>
+      <div><b class="n">5.1</b><span>Comparo el francés con el español y pienso en cómo funciona la lengua (<i>être</i>, <i>avoir</i>, el cuerpo).<br><small>Módulos 2, 3 y 5</small></span></div>
+    </div>
+    <p style="margin:12px 0 0"><b>Competencias:</b> <span class="tag">CP</span> plurilingüe <span class="tag">CCL</span> comunicación lingüística <span class="tag">CPSAA</span> aprender a aprender <span class="tag">CD</span> digital <span class="tag">STEM</span> matemática</p>
+    <ul class="how">
+      <li>Hay <b>5 módulos</b>. Cada uno se abre cuando superas el anterior (al menos la mitad bien).</li>
+      <li>Tu nota es la de tu <b>primer intento</b> en cada módulo. Si no llegas a la mitad, corrige lo que esté en rojo para poder seguir.</li>
+      <li>Al final, descarga el <b>PDF con tus resultados</b> y entrégalo en Classroom.</li>
+    </ul>
+  </section>
+
+  <!-- 0. IDENTITÉ -->
+  <section class="card mod" id="m0">
+    <div class="head"><div class="badge b0">0</div><h2>Identité<small>Escribe tus datos en mayúsculas y la fecha completa en francés</small></h2></div>
+    <div class="body">
+      <div class="ident">
+        <div><label class="f" for="nom">NOM</label><input type="text" id="nom" autocomplete="off" placeholder="GARCÍA PÉREZ"></div>
+        <div><label class="f" for="prenom">PRÉNOM</label><input type="text" id="prenom" autocomplete="off" placeholder="LUCÍA"></div>
+        <div><label class="f" for="classe">CLASSE</label><input type="text" id="classe" autocomplete="off" placeholder="1º ESO B"></div>
+        <div class="wide"><label class="f" for="date">DATE</label><input type="text" id="date" autocomplete="off" placeholder="vendredi 9 octobre 2026"></div>
+      </div>
+      <div class="actions"><button class="big" id="v0" type="button">Commencer</button><p class="msg" id="msg0"></p></div>
+    </div>
+  </section>
+
+  <!-- 1. ORAL -->
+  <section class="card mod locked" id="m1">
+    <div class="head"><div class="badge b1">1</div><h2>Compréhension orale<small>8 puntos · Criterios 1.1 y 1.2 · Usa auriculares</small></h2></div>
+    <p class="lock">🔒 Se abre cuando completes tus datos.</p>
+    <div class="body">
+      <p class="inst">Cada audio se puede escuchar <b>3 veces</b> como máximo.</p>
+      <p class="avisoVoz" hidden>Tu navegador no tiene voz en francés. Abre la actividad en Google Chrome o avisa a tu profesora.</p>
+      <h3 style="margin:0 0 8px">A. Dictée de nombres: escribe el número en cifras</h3>
+      <div class="grid" id="p1a"></div>
+      <div class="lila">
+        <button class="play" id="playLila" type="button" data-left="3">▶ Écouter Lila <small>(3)</small></button>
+        <span><b>B.</b> Escucha a Lila, la prima de Zigo, y contesta.</span>
+      </div>
+      <div class="grid" id="p1b"></div>
+      <div class="actions"><button class="big" id="v1" type="button">Valider le module</button><p class="msg" id="msg1"></p></div>
+    </div>
+  </section>
+
+  <!-- 2. CONJUGAISON -->
+  <section class="card mod locked" id="m2">
+    <div class="head"><div class="badge b2">2</div><h2>Conjugaison<small>8 puntos · Criterio 5.1</small></h2></div>
+    <p class="lock">🔒 Se abre al superar el módulo 1.</p>
+    <div class="body">
+      <p class="inst">Elige la forma correcta del verbo entre paréntesis.</p>
+      <div class="grid" id="p2"></div>
+      <div class="actions"><button class="big" id="v2" type="button">Valider le module</button><p class="msg" id="msg2"></p></div>
+    </div>
+  </section>
+
+  <!-- 3. ÊTRE OU AVOIR -->
+  <section class="card mod locked" id="m3">
+    <div class="head"><div class="badge b4">3</div><h2>Être ou avoir ?<small>6 puntos · Criterio 5.1</small></h2></div>
+    <p class="lock">🔒 Se abre al superar el módulo 2.</p>
+    <div class="body">
+      <div class="tip">💡 ¡Cuidado! En español decimos <i>tengo 12 años</i> y <i>me duele la cabeza</i>; en francés se usa <b>avoir</b>: <i>j'ai 12 ans</i>, <i>j'ai mal à la tête</i>.</div>
+      <div class="grid" id="p3"></div>
+      <div class="actions"><button class="big" id="v3" type="button">Valider le module</button><p class="msg" id="msg3"></p></div>
+    </div>
+  </section>
+
+  <!-- 4. LECTURE -->
+  <section class="card mod locked" id="m4">
+    <div class="head"><div class="badge b3">4</div><h2>Compréhension écrite<small>10 puntos · Criterios 1.1 y 1.2</small></h2></div>
+    <p class="lock">🔒 Se abre al superar el módulo 3.</p>
+    <div class="body">
+      <div class="reading">
+        <div class="text">
+          Salut ! Je m'appelle <b>Zigo</b>. Je suis un petit monstre vert. J'ai trois têtes et six yeux. Mes yeux sont jaunes.
+          J'ai deux bouches et beaucoup de dents : j'ai quarante-huit dents ! J'ai quatre bras et trois jambes.
+          Mes pieds sont très grands. Je n'ai pas de cheveux, mais j'ai deux oreilles sur chaque tête.
+          Mon ami <b>Bobo</b> est bleu. Il a un nez énorme et il a douze doigts. Nous sommes très gentils !
+          J'ai deux cent cinquante ans et Bobo a quatre-vingt-dix-neuf ans.
+        </div>
+        <svg viewBox="0 0 170 190" aria-label="Bobo, el amigo azul de Zigo">
+          <g fill="#4f8fe6" stroke="#1f4c8f" stroke-width="3">
+            <path d="M40 100 L12 130 M130 100 L158 130" stroke-width="12" stroke-linecap="round"/>
+            <path d="M65 160 v20 M105 160 v20" stroke-width="12" stroke-linecap="round"/>
+            <ellipse cx="85" cy="105" rx="55" ry="62"/>
+          </g>
+          <circle cx="68" cy="75" r="12" fill="#fff" stroke="#1f4c8f" stroke-width="2"/><circle cx="102" cy="75" r="12" fill="#fff" stroke="#1f4c8f" stroke-width="2"/>
+          <circle cx="70" cy="77" r="5"/><circle cx="104" cy="77" r="5"/>
+          <ellipse cx="85" cy="105" rx="22" ry="17" fill="#f2a63b" stroke="#a8641a" stroke-width="2"/>
+          <path d="M65 135 q20 14 40 0" fill="none" stroke="#1f4c8f" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="grid" id="p4"></div>
+      <div class="actions"><button class="big" id="v4" type="button">Valider le module</button><p class="msg" id="msg4"></p></div>
+    </div>
+  </section>
+
+  <!-- 5. LE CORPS -->
+  <section class="card mod locked" id="m5">
+    <div class="head"><div class="badge b5">5</div><h2>Le corps<small>6 puntos · Criterio 5.1</small></h2></div>
+    <p class="lock">🔒 Se abre al superar el módulo 4.</p>
+    <div class="body">
+      <p class="inst">¿Qué significa cada parte del cuerpo?</p>
+      <div class="grid" id="p5"></div>
+      <div class="actions"><button class="big" id="v5" type="button">Valider le module</button><p class="msg" id="msg5"></p></div>
+    </div>
+  </section>
+
+  <!-- RESULTADOS -->
+  <section class="card mod locked" id="m6">
+    <div class="head"><div class="badge b2">★</div><h2>Tes résultats<small>Descarga el PDF y entrégalo en Classroom</small></h2></div>
+    <p class="lock">🔒 Se abre al terminar los 5 módulos.</p>
+    <div class="body">
+      <div class="score"><div id="nota"></div><div id="medalla"></div></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Módulo</th><th>Criterio</th><th>Primer intento</th></tr></thead>
+        <tbody id="tabla"></tbody>
+      </table></div>
+      <div class="actions">
+        <button class="pdfbtn" id="pdf" type="button">⬇ Descargar PDF de resultados</button>
+        <p class="msg" id="msgpdf"></p>
+      </div>
+      <p class="inst" style="margin-top:10px">Después, en Classroom: abre la tarea → <b>Añadir o crear</b> → <b>Archivo</b> → elige el PDF → <b>Entregar</b>.</p>
+    </div>
+  </section>
+
+  <details>
+    <summary>Para el profesorado</summary>
+    <p>Segunda Lengua Extranjera (Francés), 1.º ESO · Decreto 30/2023, de 16 de marzo (BOC n.º 58, de 23 de marzo de 2023). Los criterios de arriba son un resumen para el alumnado; comprueba la redacción literal en el currículo oficial.</p>
+    <p>Saberes básicos: presentes de <i>être</i> y <i>avoir</i>; números; léxico del cuerpo y la descripción física; estrategias de comprensión oral y escrita.</p>
+    <p>Nota: primer intento de cada módulo (38 puntos → escala de 10). Para abrir el siguiente módulo hay que llegar a la mitad de aciertos; los reintentos no cambian la nota.</p>
+  </details>
+</div>
+
+<script>
+/* ===== COLORES DEL PDF (los mismos que arriba) ===== */
+const COLORES_PDF={c1:"#0e7c86",c2:"#f4b400",ok:"#1f8a4c",ko:"#c93838",ink:"#173236",muted:"#557074"};
+
+/* ---------- DATOS ---------- */
+const LILA="Bonjour ! Je m'appelle Lila. Je suis la cousine de Zigo. Je suis petite et rose. J'ai une tête, quatre yeux et deux nez. J'ai huit bras ! J'ai treize ans.";
+const ETRE=["suis","es","est","sommes","êtes","sont"], AVOIR=["ai","as","a","avons","avez","ont"];
+const ES5=["la boca","el brazo","la cabeza","el pie","la nariz","los ojos","la oreja","la pierna"];
+const MODS={
+ 1:{nombre:"1. Compréhension orale",crit:"1.1 · 1.2",items:[]},
+ 2:{nombre:"2. Conjugaison",crit:"5.1",items:[]},
+ 3:{nombre:"3. Être ou avoir ?",crit:"5.1",items:[]},
+ 4:{nombre:"4. Compréhension écrite",crit:"1.1 · 1.2",items:[]},
+ 5:{nombre:"5. Le corps",crit:"5.1",items:[]}
+};
+const $=id=>document.getElementById(id);
+const sel=(id,o)=>`<select id="${id}"><option value="">—</option>${o.map(x=>`<option>${x}</option>`).join("")}</select>`;
+const radios=(id,o)=>`<div class="opts">${o.map(x=>`<label><input type="radio" name="${id}" value="${x}"> ${x}</label>`).join("")}</div>`;
+function add(m,id,sol,q,tipo){MODS[m].items.push({id,sol,q,tipo});}
+
+/* Módulo 1 */
+const DICT=[["dix-sept","17"],["soixante-quatre","64"],["trois cent quatre-vingts","380"],["soixante-quinze mille","75000"]];
+$("p1a").innerHTML=DICT.map((r,i)=>{add(1,`m1a${i}`,r[1],`Dictée ${i+1}`,"num");
+ return `<div class="q audiorow" id="q_m1a${i}"><button class="play" type="button" data-say="${r[0]}" data-left="3">▶ ${i+1} <small>(3)</small></button>
+ <input type="text" id="m1a${i}" inputmode="numeric" aria-label="Número ${i+1} en cifras" placeholder="en cifras"></div>`}).join("");
+const P1B=[["De quelle couleur est Lila ?",["verte","rose","bleue"],"rose"],["Combien d'yeux a Lila ?",["deux","quatre","six"],"quatre"],
+ ["Combien de bras a Lila ?",["quatre","six","huit"],"huit"],["Quel âge a Lila ?",["3 ans","13 ans","30 ans"],"13 ans"]];
+$("p1b").innerHTML=P1B.map((r,i)=>{add(1,`m1b${i}`,r[2],"Lila: "+r[0],"mc");
+ return `<div class="q mc" id="q_m1b${i}"><p>${String.fromCharCode(97+i)}) ${r[0]}</p>${radios("m1b"+i,r[1])}</div>`}).join("");
+
+/* Módulo 2 */
+const P2=[["Je","être","suis","petit."],["Tu","avoir","as","deux bras."],["Il","être","est","grand."],["Nous","avoir","avons","dix doigts."],
+ ["Vous","être","êtes","gentils."],["Elles","avoir","ont","les yeux verts."],["J'","avoir","ai","douze ans."],["Ils","être","sont","français."]];
+$("p2").innerHTML=P2.map((r,i)=>{add(2,`m2_${i}`,r[2],`${r[0]} ___ ${r[3]} (${r[1]})`,"sel");
+ return `<div class="q" id="q_m2_${i}">${r[0]} ${sel("m2_"+i,r[1]==="être"?ETRE:AVOIR)} ${r[3]} <i>(${r[1]})</i></div>`}).join("");
+
+/* Módulo 3 */
+const P3=[["Elle","grande.","est",["est","a"]],["Nous","les cheveux blonds.","avons",["sommes","avons"]],["Tu","mal à la tête.","as",["es","as"]],
+ ["Ils","très fatigués.","sont",["sont","ont"]],["Vous","un grand nez.","avez",["êtes","avez"]],["Je","onze ans.","ai",["suis","ai"]]];
+$("p3").innerHTML=P3.map((r,i)=>{add(3,`m3_${i}`,r[2],`${r[0]} ___ ${r[1]}`,"sel");
+ return `<div class="q" id="q_m3_${i}">${r[0]} ${sel("m3_"+i,r[3])} ${r[1]}</div>`}).join("");
+
+/* Módulo 4 */
+const P4=[["De quelle couleur est Zigo ?",["bleu","vert","jaune"],"vert"],["Combien de têtes a Zigo ?",["deux","trois","six"],"trois"],
+ ["De quelle couleur sont ses yeux ?",["jaunes","verts","bleus"],"jaunes"],["Combien de dents a Zigo ?",["38","48","84"],"48"],
+ ["Combien de jambes a Zigo ?",["deux","trois","quatre"],"trois"],["Comment sont ses pieds ?",["très petits","très grands","bleus"],"très grands"],
+ ["Combien d'oreilles a Zigo en tout ?",["deux","quatre","six"],"six"],["Combien de doigts a Bobo ?",["10","12","20"],"12"],
+ ["Quel âge a Zigo ?",["150 ans","250 ans","205 ans"],"250 ans"],["Quel âge a Bobo ?",["79 ans","89 ans","99 ans"],"99 ans"]];
+$("p4").innerHTML=P4.map((r,i)=>{add(4,`m4_${i}`,r[2],r[0],"mc");
+ return `<div class="q mc" id="q_m4_${i}"><p>${i+1}. ${r[0]}</p>${radios("m4_"+i,r[1])}</div>`}).join("");
+
+/* Módulo 5 */
+const P5=[["la tête","la cabeza"],["les yeux","los ojos"],["la jambe","la pierna"],["le pied","el pie"],["l'oreille","la oreja"],["le nez","la nariz"]];
+$("p5").innerHTML=P5.map((r,i)=>{add(5,`m5_${i}`,r[1],r[0],"sel");
+ return `<div class="q" id="q_m5_${i}"><b>${r[0]}</b> = ${sel("m5_"+i,ES5)}</div>`}).join("");
+
+/* ---------- ESTADO ---------- */
+const est={ident:null,primero:{},respPrimero:{},actual:1};
+
+/* ---------- PROGRESO ---------- */
+$("steps").innerHTML=[0,1,2,3,4,5].map(i=>`<span id="st${i}"></span>`).join("");
+function pintarProgreso(){
+ for(let i=0;i<=5;i++){const s=$("st"+i);s.className=(i<est.actual)?"done":(i===est.actual?"on":"");}
+ $("progtxt").textContent=est.actual>5?"¡Actividad terminada!":`Módulo ${est.actual} de 5`;
+}
+est.actual=0;pintarProgreso();
+function abrir(n){const m=$("m"+n);m.classList.remove("locked");setTimeout(()=>m.scrollIntoView({behavior:"smooth",block:"start"}),150);}
+
+/* ---------- AUDIO ---------- */
+let voz=null;
+function cargarVoz(){try{const v=speechSynthesis.getVoices();voz=v.find(x=>/^fr[-_]FR/i.test(x.lang))||v.find(x=>/^fr/i.test(x.lang))||null;
+ document.querySelector(".avisoVoz").hidden=!!voz||v.length===0;}catch(e){document.querySelector(".avisoVoz").hidden=false;}}
+try{cargarVoz();speechSynthesis.onvoiceschanged=cargarVoz;}catch(e){}
+function decir(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="fr-FR";if(voz)u.voice=voz;u.rate=.8;speechSynthesis.speak(u);}catch(e){document.querySelector(".avisoVoz").hidden=false;}}
+function usar(b){let n=+b.dataset.left;if(n<=0)return false;n--;b.dataset.left=n;b.querySelector("small").textContent=`(${n})`;if(n===0)b.disabled=true;return true;}
+document.querySelectorAll("#p1a .play").forEach(b=>b.onclick=()=>{if(usar(b))decir(b.dataset.say);});
+$("playLila").onclick=()=>{const b=$("playLila");if(usar(b))decir(LILA);};
+
+/* ---------- MÓDULO 0 ---------- */
+$("v0").onclick=()=>{
+ const d={nom:$("nom").value.trim(),prenom:$("prenom").value.trim(),classe:$("classe").value.trim(),date:$("date").value.trim()};
+ const falta=[["NOM","nom"],["PRÉNOM","prenom"],["CLASSE","classe"],["DATE","date"]].filter(([,k])=>!d[k]).map(([n])=>n);
+ if(falta.length){const m=$("msg0");m.className="msg ko";m.textContent="Falta: "+falta.join(", ")+".";return;}
+ if(d.date.split(/\s+/).length<3){const m=$("msg0");m.className="msg ko";m.textContent="Escribe la fecha completa: día de la semana, número, mes y año.";return;}
+ est.ident=d;["nom","prenom","classe","date"].forEach(k=>$(k).disabled=true);
+ $("v0").disabled=true;$("msg0").className="msg ok";$("msg0").textContent="✔ ¡C'est parti !";
+ $("m0").classList.add("passed");est.actual=1;pintarProgreso();abrir(1);
+};
+
+/* ---------- VALIDAR MÓDULOS ---------- */
+function val(id){const s=$(id);if(s)return s.value.trim();const r=document.querySelector(`input[name="${id}"]:checked`);return r?r.value:"";}
+const limpiaNum=s=>s.replace(/[\s., ]/g,"");
+const esCorrecta=it=>it.tipo==="num"?limpiaNum(val(it.id))===it.sol:val(it.id)===it.sol;
+function bloquear(it){const s=$(it.id);if(s)s.disabled=true;else document.querySelectorAll(`input[name="${it.id}"]`).forEach(x=>x.disabled=true);}
+
+function validar(n){
+ const mod=MODS[n],msg=$("msg"+n),total=mod.items.length,min=Math.ceil(total/2);
+ const vac=mod.items.filter(it=>!val(it.id)).length;
+ if(vac){msg.className="msg ko";msg.textContent=`Te faltan ${vac} respuesta(s).`;return;}
+ const bien=mod.items.filter(esCorrecta).length;
+ if(!(n in est.primero)){est.primero[n]=bien;est.respPrimero[n]=mod.items.map(it=>({q:it.q,r:val(it.id),sol:it.sol,ok:esCorrecta(it)}));}
+ mod.items.forEach(it=>{const ok=esCorrecta(it),q=$("q_"+it.id);q.classList.remove("ok","ko");q.classList.add(ok?"ok":"ko");if(ok)bloquear(it);});
+ if(bien>=min){
+  mod.items.forEach(bloquear);
+  if(n===1)document.querySelectorAll("#m1 .play").forEach(b=>b.disabled=true);
+  $("v"+n).disabled=true;msg.className="msg ok";
+  msg.textContent=`✔ Módulo superado. Primer intento: ${est.primero[n]}/${total}.`;
+  $("m"+n).classList.add("passed");est.actual=n+1;pintarProgreso();
+  if(n<5)abrir(n+1);else terminar();
+ }else{
+  msg.className="msg ko";
+  msg.textContent=`Tienes ${bien}/${total}. Necesitas ${min} para abrir el siguiente módulo. Corrige las respuestas en rojo y vuelve a validar.`;
+ }
+}
+[1,2,3,4,5].forEach(n=>$("v"+n).onclick=()=>validar(n));
+
+/* ---------- RESULTADOS ---------- */
+let res=null;
+function terminar(){
+ const pts=[1,2,3,4,5].map(n=>est.primero[n]);
+ const tot=pts.reduce((a,b)=>a+b,0),max=[1,2,3,4,5].reduce((a,n)=>a+MODS[n].items.length,0);
+ const n10=tot/max*10;
+ const c1=est.primero[1]+est.primero[4],c1max=MODS[1].items.length+MODS[4].items.length;
+ const c5=est.primero[2]+est.primero[3]+est.primero[5],c5max=MODS[2].items.length+MODS[3].items.length+MODS[5].items.length;
+ res={tot,max,n10,c1,c1max,c5,c5max};
+ $("nota").textContent=n10.toFixed(1).replace(".",",")+" / 10";
+ $("medalla").textContent=n10>=9?"🏆 Excellent !":n10>=7?"🌟 Très bien !":n10>=5?"👍 Bien !":"💪 Courage !";
+ $("tabla").innerHTML=[1,2,3,4,5].map(n=>`<tr><td>${MODS[n].nombre}</td><td>${MODS[n].crit}</td><td>${est.primero[n]} / ${MODS[n].items.length}</td></tr>`).join("")+
+  `<tr><td><b>Criterios 1.1 · 1.2</b></td><td></td><td><b>${c1} / ${c1max}</b></td></tr><tr><td><b>Criterio 5.1</b></td><td></td><td><b>${c5} / ${c5max}</b></td></tr>`;
+ abrir(6);
+}
+
+/* ---------- PDF ---------- */
+function rgb(h){return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));}
+function generarPDF(){
+ const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});
+ const C=COLORES_PDF,W=210,M=15;let y=0;
+ const salto=h=>{if(y+h>282){doc.addPage();y=18;}};
+ doc.setFillColor(...rgb(C.c1));doc.rect(0,0,W,30,"F");
+ doc.setFillColor(...rgb(C.c2));doc.rect(0,30,W,2,"F");
+ doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(10);
+ doc.text("IES EL MAYORAZGO · FRANÇAIS · 1º ESO",M,11);
+ doc.setFontSize(18);doc.text("Être et avoir · Le monstre Zigo",M,22);
+ y=42;doc.setTextColor(...rgb(C.ink));doc.setFontSize(11);
+ const id=est.ident;
+ [["NOM",id.nom],["PRÉNOM",id.prenom],["CLASSE",id.classe],["DATE",id.date]].forEach(([k,v],i)=>{
+  const x=i%2?W/2+2:M,yy=y+Math.floor(i/2)*8;doc.setFont("helvetica","bold");doc.text(k+":",x,yy);
+  doc.setFont("helvetica","normal");doc.text(doc.splitTextToSize(v,W/2-M-25)[0],x+24,yy);});
+ y+=20;
+ doc.setDrawColor(...rgb(C.c1));doc.setLineWidth(.6);doc.roundedRect(M,y,W-2*M,18,3,3);
+ doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(...rgb(C.c1));
+ doc.text(`NOTE : ${res.n10.toFixed(1).replace(".",",")} / 10`,M+6,y+12);
+ doc.setFontSize(11);doc.setTextColor(...rgb(C.ink));doc.setFont("helvetica","normal");
+ doc.text(`${res.tot} / ${res.max} bonnes réponses (premier essai)`,W-M-6,y+12,{align:"right"});
+ y+=28;
+ doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("Résultats par module et par critère",M,y);y+=6;
+ doc.setFontSize(10);
+ const fila=(a,b,c,bold)=>{salto(7);doc.setFont("helvetica",bold?"bold":"normal");doc.text(a,M+2,y);doc.text(b,120,y);doc.text(c,W-M-2,y,{align:"right"});
+  doc.setDrawColor(210,220,220);doc.setLineWidth(.2);doc.line(M,y+2,W-M,y+2);y+=7;};
+ fila("Module","Critère","Points",true);
+ [1,2,3,4,5].forEach(n=>fila(MODS[n].nombre,MODS[n].crit,`${est.primero[n]} / ${MODS[n].items.length}`));
+ fila("Critères 1.1 · 1.2 (compréhension)","",`${res.c1} / ${res.c1max}`,true);
+ fila("Critère 5.1 (plurilinguisme)","",`${res.c5} / ${res.c5max}`,true);
+ y+=4;salto(14);
+ doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("Détail des réponses (premier essai)",M,y);y+=6;
+ [1,2,3,4,5].forEach(n=>{
+  salto(10);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...rgb(C.c1));doc.text(MODS[n].nombre,M,y);y+=5;
+  doc.setFontSize(9);
+  est.respPrimero[n].forEach(r=>{
+   salto(5);doc.setFont("helvetica","bold");doc.setTextColor(...rgb(r.ok?C.ok:C.ko));doc.text(r.ok?"OK":"X",M+2,y);
+   doc.setFont("helvetica","normal");doc.setTextColor(...rgb(C.ink));
+   doc.text(doc.splitTextToSize(r.q,95)[0],M+10,y);
+   doc.text(doc.splitTextToSize(r.r,40)[0],112,y);
+   if(!r.ok){doc.setTextColor(...rgb(C.muted));doc.text(doc.splitTextToSize("("+r.sol+")",38)[0],155,y);}
+   y+=5;});
+  y+=2;});
+ salto(10);y+=2;doc.setFontSize(8);doc.setTextColor(...rgb(C.muted));
+ doc.text(`Généré le ${new Date().toLocaleString("fr-FR")} · Segunda Lengua Extranjera (Francés), Decreto 30/2023 (Canarias)`,M,y);
+ const limpio=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^A-Za-z0-9]+/g,"_").replace(/^_|_$/g,"");
+ doc.save(`Zigo_${limpio(id.nom)}_${limpio(id.prenom)}.pdf`);
+}
+$("pdf").onclick=()=>{
+ const m=$("msgpdf");
+ try{if(!window.jspdf)throw new Error("sin librería");generarPDF();m.className="msg ok";m.textContent="✔ PDF descargado. Búscalo en tu carpeta de Descargas.";}
+ catch(e){m.className="msg ko";m.textContent="No se ha podido crear el PDF. Haz una captura de pantalla de esta página y entrégala en Classroom.";}
+};
+</script>
+</body>
+</html>
